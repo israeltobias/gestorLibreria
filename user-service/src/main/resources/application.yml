@@ -1,0 +1,42 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:h2:mem:userdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update # Crea/actualiza el esquema de la BD al arrancar
+
+# Configuración de JWT
+jwt:
+  secret: "m7cUKmHawlnlyllJj7yXcc8UAIRucO00HszyCA49Q+//nMxrojNv7kmFDIlrpHtRfebvLVCuMUgGIpUSq1FygE6O5Bbr0Dk+sj8eGoU361ZgUdxi9zRZL71HACRNBtKh1kgp+0t/+FDeP2pZqApG8r11BsTcjcLG63OXlsmIa0Jcdvu+B0HjN4lM8W7HFGMaLaAG51ykX/4BpVvSFImFFv2m2ympB/7saKWmKtI9v56+oW0B+AzESHqNBMCvf8pLFYcKDe3laLhkxe5QwRYxNa6oI5lJyB08z+LN7KuwYxI6hKAGT4ujOSZ9p/04S9e5pUhw7UnsOf1lmFlvK1MmHw=="
+  expiration: 1800000 # 30 minutos en milisegundos
+# Configuración de CORS
+cors:
+  # Sitios de confianza
+  allowedOrigins: http://localhost:8081
+  # Métodos permitidos por sitios de no confianza
+  allowedMethods: OPTIONS
+  # CAbeceras permitidas
+  exposedHeaders: Authorization,Content-Type
+
+api:
+  errorCodes:
+    NOT_FOUND: DATA_NOT_FOUND
+    UNAUTHORIZED: AUTHENTICATION_FAILED
+    FORBIDDEN: INSUFFICIENT_PERMISSIONS
+    CONFLICT: DATA_FOUND
+    INTERNAL_SERVER_ERROR: GENERIC_SERVER_ERROR
+  errorMessages:
+    NOT_FOUND: "No se han encontrado datos"
+    UNAUTHORIZED: "No está autorizado para acceder a este recurso"
+    FORBIDDEN: "No tiene privilegios para este recurso"
+    CONFLICT: "Los datos ya existen."
+    INTERNAL_SERVER_ERROR: "Se ha producido en un error."
