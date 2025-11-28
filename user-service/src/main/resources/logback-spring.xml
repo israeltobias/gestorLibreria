@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Importa la configuración base de Spring Boot para colores en consola, etc. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Define una propiedad para la ruta de los logs -->
+    <property name="LOGS_PATH" value="logs"/>
+
+    <!-- Appender para la Consola -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Appender para el Fichero con Rotación Diaria -->
+    <appender name="FILE_ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_PATH}/user-service.log</file>
+
+        <!-- Aquí definimos la política de rotación -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Patrón para los ficheros archivados. Rota cada día. -->
+            <fileNamePattern>${LOGS_PATH}/archived/user-service-%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- Conserva 30 días de historial -->
+            <maxHistory>30</maxHistory>
+
+            <!-- Limita el tamaño total de los archivos de log -->
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Configuración del Logger Raíz (Root) -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE_ROLLING"/>
+    </root>
+
+</configuration>
