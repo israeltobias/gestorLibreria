@@ -13,45 +13,34 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-        // --- 1. SECCIÓN DE INFORMACIÓN GENERAL (MEJORADA) ---
         info = @Info(
                 title = "API de Servicio de Usuarios - Gestor de Librería",
                 version = "v1.0.0", // Es una convención usar 'v' al principio
                 description = "Esta API proporciona los endpoints para la gestión de usuarios, " +
                         "incluyendo la autenticación (login), registro y autorización basada en roles. " +
                         "Forma parte del sistema de microservicios del Gestor de Librería.",
-
-                // --- DATOS DE CONTACTO (NUEVO) ---
                 contact = @Contact(
-                        name = "Israel Tobias", // Tu nombre o el del equipo
+                        name = "Israel Tobias",
                         email = "tu.email@ejemplo.com",
-                        url = "https://github.com/israeltobias/gestorLibreria" // Opcional: enlace a tu web
+                        url = "https://github.com/israeltobias/gestorLibreria"
                 ),
 
-                // --- INFORMACIÓN DE LICENCIA (NUEVO) ---
                 license = @License(
                         name = "GNU GPL v3",
-                        url = "https://www.gnu.org/licenses/gpl-3.0.html" // Enlace a los detalles de la licencia
+                        url = "https://www.gnu.org/licenses/gpl-3.0.html"
                 ),
-
-                termsOfService = "http://swagger.io/terms/" // URL a tus términos de servicio
+                termsOfService = "http://swagger.io/terms/"
         ),
 
-        // --- 2. SERVIDORES (NUEVO Y MUY RECOMENDADO) ---
-        // Define los servidores donde la API está desplegada.
-        // Esto permite a los usuarios cambiar fácilmente entre entornos en Swagger UI.
         servers = {
                 @Server(
                         description = "Entorno de Desarrollo Local",
                         url = "http://localhost:8081"
                 )
         },
-
-        // --- 3. REQUISITO DE SEGURIDAD GLOBAL (SIN CAMBIOS) ---
         security = @SecurityRequirement(name = "bearerAuth")
 )
 @SecurityScheme(
-        // --- 4. DEFINICIÓN DEL ESQUEMA DE SEGURIDAD (SIN CAMBIOS) ---
         name = "bearerAuth",
         description = "Token de acceso JWT. Para autorizar, introduce la palabra **'Bearer'** seguida de un espacio y tu token.",
         scheme = "bearer",
