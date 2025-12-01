@@ -21,7 +21,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = UserRegisteredException.class, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<Object> handleUserNotFound(UserRegisteredException userRegisteredException, HttpServletRequest request) {
+    public ResponseEntity<Object> handleUserFound(UserRegisteredException userRegisteredException, HttpServletRequest request) {
         return apiResponse.error(HttpStatus.CONFLICT, request.getRequestURI());
     }
 

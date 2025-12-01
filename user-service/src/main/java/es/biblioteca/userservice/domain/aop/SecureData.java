@@ -1,8 +1,6 @@
 package es.biblioteca.userservice.domain.aop;
 
 import es.biblioteca.userservice.domain.annotations.LogMasked;
-import es.biblioteca.userservice.infrastructure.adapter.out.persistence.UserRepositoryAdapter;
-import es.biblioteca.userservice.infrastructure.adapter.out.security.JwtProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -84,10 +82,15 @@ public class SecureData {
 
         StringBuilder sb = new StringBuilder(arg.getClass().getSimpleName()).append("[");
         Field[] fields = arg.getClass().getDeclaredFields();
+        addFields(fields, arg, sb);
+        sb.append("]");
+        return sb.toString();
+    }
 
+    private void addFields(Field[] fields, Object arg, StringBuilder sb){
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
-            field.setAccessible(true);
+            field.setAccessible(true);//NOSONAR squid:S3011 - Necesario para leer campos privados en logging
 
             sb.append(field.getName()).append("=");
             try {
@@ -105,9 +108,8 @@ public class SecureData {
                 sb.append(", ");
             }
         }
-        sb.append("]");
-        return sb.toString();
     }
+
     // 3. MÉTODO HELPER PARA COMPROBAR SI LA CLASE ES DE NUESTRA APLICACIÓN
     private boolean isAppClass(Class<?> clazz) {
         return clazz.getPackage() != null && clazz.getPackage().getName().startsWith(APP_BASE_PACKAGE);

@@ -6,7 +6,8 @@ import es.biblioteca.userservice.domain.model.User;
 import es.biblioteca.userservice.domain.repository.UserRepositoryPort;
 import es.biblioteca.userservice.infrastructure.adapter.out.persistence.UserMapper;
 import es.biblioteca.userservice.infrastructure.adapter.out.security.JwtProvider;
-import es.biblioteca.userservice.infrastructure.dto.AuthRequest;
+import es.biblioteca.userservice.infrastructure.dto.LoginRequest;
+import es.biblioteca.userservice.infrastructure.dto.RegisterRequest;
 import es.biblioteca.userservice.infrastructure.dto.TokenResponse;
 import es.biblioteca.userservice.infrastructure.dto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -23,22 +24,22 @@ public class AuthServiceImpl implements AuthUseCase {
     private final JwtProvider jwtProvider;
 
     @Override
-    public UserResponseDTO register(AuthRequest authRequest) {
-        if (userRepositoryPort.findByUsername(authRequest.username()).isPresent()) {
+    public UserResponseDTO register(RegisterRequest registerRequest) {
+        if (userRepositoryPort.findByUsername(registerRequest.username()).isPresent()) {
             throw new UserRegisteredException("User already exists");
         }
         User user = User.builder()
-                .username(authRequest.username())
-                .password(passwordEncoder.encode(authRequest.password()))
-                .roles(authRequest.roles())
+                .username(registerRequest.username())
+                .password(passwordEncoder.encode(registerRequest.password()))
+                .roles(registerRequest.roles())
                 .build();
         return UserMapper.toDTO(UserMapper.toEntity(userRepositoryPort.save(user)));
     }
 
     @Override
-    public Optional<TokenResponse> login(AuthRequest authRequest) {
-        return userRepositoryPort.findByUsername(authRequest.username())
-                .filter(user -> passwordEncoder.matches(authRequest.password(), user.getPassword()))
+    public Optional<TokenResponse> login(LoginRequest loginRequest) {
+        return userRepositoryPort.findByUsername(loginRequest.username())
+                .filter(user -> passwordEncoder.matches(loginRequest.password(), user.getPassword()))
                 .map(jwtProvider::createToken);
     }
 }

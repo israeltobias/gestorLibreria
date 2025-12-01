@@ -2,7 +2,6 @@ package es.biblioteca.userservice.domain.aop;
 
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -33,20 +32,17 @@ public class AfterThrowingAspect {
         String methodArgs = Arrays.toString(joinPoint.getArgs());
 
         // --- Construir un mensaje de log detallado y estructurado ---
+        String txt = """
+                    <!!!> EXCEPCIÓN LANZADA <!!!>
+                    CLASE      : %s
+                    MÉTODO     : %s
+                    ARGUMENTOS : %s
+                    EXCEPCIÓN  : %s
+                    MENSAJE    : %s
+                    TRAZA      : %s
+                """.formatted(className, methodName, methodArgs, error.getClass().getName(), error.getMessage(), error.toString());
         log.error(
-                "\n<!!!> EXCEPCIÓN LANZADA <!!!>\n" +
-                        "CLASE      : {}\n" +
-                        "MÉTODO     : {}\n" +
-                        "ARGUMENTOS : {}\n" +
-                        "EXCEPCIÓN  : {}\n" +
-                        "MENSAJE    : {}\n" +
-                        "TRAZA      : ",
-                className,
-                methodName,
-                methodArgs, // ¡CUIDADO! Aplica el enmascaramiento si es necesario
-                error.getClass().getName(),
-                error.getMessage(),
-                error
+                txt
         );
     }
 }

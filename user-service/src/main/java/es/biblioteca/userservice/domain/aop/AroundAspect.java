@@ -1,6 +1,6 @@
 package es.biblioteca.userservice.domain.aop;
 
-import es.biblioteca.userservice.domain.annotations.LogMasked;
+
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -8,16 +8,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Aspect
 @Component
@@ -26,12 +19,6 @@ public class AroundAspect {
 
     private static final Logger log = LoggerFactory.getLogger(AroundAspect.class);
     private final SecureData secureData;
-
-   /* public AroundAspect(SecureData secureData) {
-        super();
-        this.secureData = secureData;
-    }*/
-
 
     @Around("PointCuts.pointcutServicePackage() " +
             "|| PointCuts.pointcutControllerPackage() " +

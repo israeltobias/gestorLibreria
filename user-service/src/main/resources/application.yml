@@ -14,6 +14,11 @@ spring:
     hibernate:
       ddl-auto: update # Crea/actualiza el esquema de la BD al arrancar
 
+#Congiguración spring doc
+springdoc:
+  # Desactiva la inferencia de respuestas de error a partir de @ControllerAdvice
+  override-with-generic-response: false
+
 # Configuración de JWT
 jwt:
   secret: "m7cUKmHawlnlyllJj7yXcc8UAIRucO00HszyCA49Q+//nMxrojNv7kmFDIlrpHtRfebvLVCuMUgGIpUSq1FygE6O5Bbr0Dk+sj8eGoU361ZgUdxi9zRZL71HACRNBtKh1kgp+0t/+FDeP2pZqApG8r11BsTcjcLG63OXlsmIa0Jcdvu+B0HjN4lM8W7HFGMaLaAG51ykX/4BpVvSFImFFv2m2ympB/7saKWmKtI9v56+oW0B+AzESHqNBMCvf8pLFYcKDe3laLhkxe5QwRYxNa6oI5lJyB08z+LN7KuwYxI6hKAGT4ujOSZ9p/04S9e5pUhw7UnsOf1lmFlvK1MmHw=="
