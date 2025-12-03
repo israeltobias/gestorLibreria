@@ -1,6 +1,7 @@
 package es.biblioteca.userservice.infrastructure.config;
 
 import es.biblioteca.userservice.domain.repository.UserRepositoryPort;
+import es.biblioteca.userservice.infrastructure.adapter.out.persistence.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ public class ApplicationConfig {
         // Usamos una expresión lambda para una implementación concisa.
         // Se conecta directamente a tu capa de persistencia (puerto del repositorio).
         return username -> userRepositoryPort.findByUsername(username)
+                .map(UserMapper::toSecurityUser)
                 .orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
     }
 

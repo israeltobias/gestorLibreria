@@ -41,9 +41,9 @@ public class JwtProvider {
         return new TokenResponse(buildToken(claims,userDetails));
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    public boolean isTokenValid(TokenResponse token, UserDetails userDetails) {
+        final String username = extractUsername(token.token());
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token.token());
     }
 
     public String extractUsername(String token) {

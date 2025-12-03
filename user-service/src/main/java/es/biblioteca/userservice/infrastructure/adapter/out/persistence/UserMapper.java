@@ -1,8 +1,10 @@
 package es.biblioteca.userservice.infrastructure.adapter.out.persistence;
 
 import es.biblioteca.userservice.domain.model.User;
+import es.biblioteca.userservice.infrastructure.adapter.out.security.SecurityUser;
 import es.biblioteca.userservice.infrastructure.dto.UserResponseDTO;
 
+import java.util.HashSet;
 import java.util.List;
 
 public class UserMapper {
@@ -13,7 +15,7 @@ public class UserMapper {
     public static User toDomain(UserEntity userEntity) {
         return User.builder().id(userEntity.getId()).username(userEntity.getUsername())
                 .password(userEntity.getPassword())
-                .roles(userEntity.getRoles()).build();
+                .roles(new HashSet<>(userEntity.getRoles())).build();
     }
 
     public static UserEntity toEntity(User user) {
@@ -21,7 +23,7 @@ public class UserMapper {
         entity.setId(user.getId());
         entity.setUsername(user.getUsername());
         entity.setPassword(user.getPassword());
-        entity.setRoles(user.getRoles());
+        entity.setRoles(user.getRoles().stream().toList());
         return entity;
     }
 
@@ -37,5 +39,13 @@ public class UserMapper {
         return userList.stream()
                 .map(UserMapper::toDTO)
                 .toList();
+    }
+
+    public static SecurityUser toSecurityUser(User user){
+        return new SecurityUser(user);
+    }
+
+    public static SecurityUser toSecuritUser(UserEntity userEntity){
+        return new SecurityUser(toDomain(userEntity));
     }
 }

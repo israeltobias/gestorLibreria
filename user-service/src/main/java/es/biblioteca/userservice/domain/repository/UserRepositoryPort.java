@@ -1,6 +1,7 @@
 package es.biblioteca.userservice.domain.repository;
 
 import es.biblioteca.userservice.domain.model.User;
+import es.biblioteca.userservice.infrastructure.adapter.out.security.SecurityUser;
 import es.biblioteca.userservice.infrastructure.dto.UserResponseDTO;
 
 import java.util.List;

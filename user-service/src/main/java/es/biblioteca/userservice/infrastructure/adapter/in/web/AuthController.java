@@ -30,7 +30,12 @@ public class AuthController {
     @OperationRegister
     public ResponseEntity<Object> registerUser(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest httpServletRequest) {
         UserResponseDTO userDTO = authUseCase.register(registerRequest);
-        return apiResponse.genericResponse(HttpStatus.CREATED, userDTO, "Usuario creado correctamente.", httpServletRequest.getRequestURI());
+        try {
+            return apiResponse.genericResponse(HttpStatus.CREATED, userDTO, "Usuario creado correctamente.", httpServletRequest.getRequestURI());
+        } catch (Exception exception){
+            IO.println(exception);
+            return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+        }
     }
 
 

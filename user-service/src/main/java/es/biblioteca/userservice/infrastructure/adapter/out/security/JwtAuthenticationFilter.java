@@ -1,5 +1,6 @@
 package es.biblioteca.userservice.infrastructure.adapter.out.security;
 
+import es.biblioteca.userservice.infrastructure.dto.TokenResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,8 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String jwt = authHeader.substring(7);
-        final String username = jwtProvider.extractUsername(jwt);
+        final TokenResponse jwt = new TokenResponse(authHeader.substring(7));
+        final String username = jwtProvider.extractUsername(jwt.token());
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
