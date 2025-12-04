@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 
 public class SecurityUser implements UserDetails {
-    private final User user; // Contiene una referencia a nuestro objeto de dominio
+    private final transient User user; // Contiene una referencia a nuestro objeto de dominio
 
     public SecurityUser(User user) {
         this.user = user;

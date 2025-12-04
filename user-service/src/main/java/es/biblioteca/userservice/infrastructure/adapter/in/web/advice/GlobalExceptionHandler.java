@@ -51,7 +51,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Throwable cause = ex.getCause();
         if (cause instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException) {
             // Expresión regular para extraer el valor y los valores permitidos del mensaje de error de Jackson
-            Pattern pattern = Pattern.compile("accepted for Enum class: \\[(.*?)\\]");
+            Pattern pattern = Pattern.compile("accepted for Enum class: \\[(.*?)]");
 
             Matcher matcher = pattern.matcher(cause.getMessage());
             if (matcher.find()) {

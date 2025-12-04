@@ -2,7 +2,6 @@ package es.biblioteca.userservice.application.service;
 
 import es.biblioteca.userservice.application.exceptions.UserRegisteredException;
 import es.biblioteca.userservice.application.port.in.AuthUseCase;
-import es.biblioteca.userservice.domain.model.Role;
 import es.biblioteca.userservice.domain.model.User;
 import es.biblioteca.userservice.domain.repository.UserRepositoryPort;
 import es.biblioteca.userservice.infrastructure.adapter.out.persistence.UserMapper;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
