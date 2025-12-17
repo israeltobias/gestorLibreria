@@ -3,6 +3,7 @@ package es.biblioteca.userservice.domain.model;
 import es.biblioteca.userservice.domain.annotations.LogMasked;
 import lombok.Builder;
 import lombok.Getter;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 

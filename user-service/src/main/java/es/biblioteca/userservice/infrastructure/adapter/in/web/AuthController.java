@@ -1,10 +1,13 @@
 package es.biblioteca.userservice.infrastructure.adapter.in.web;
 
+import es.biblioteca.userservice.application.exceptions.UserRegisteredException;
 import es.biblioteca.userservice.application.port.in.AuthUseCase;
 import es.biblioteca.userservice.infrastructure.adapter.out.annotations.OperationLogin;
 import es.biblioteca.userservice.infrastructure.adapter.out.annotations.OperationRegister;
 import es.biblioteca.userservice.infrastructure.adapter.out.factory.ResponseEntityFactory;
-import es.biblioteca.userservice.infrastructure.dto.*;
+import es.biblioteca.userservice.infrastructure.dto.LoginRequest;
+import es.biblioteca.userservice.infrastructure.dto.RegisterRequest;
+import es.biblioteca.userservice.infrastructure.dto.UserResponseDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -29,12 +32,11 @@ public class AuthController {
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @OperationRegister
     public ResponseEntity<Object> registerUser(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest httpServletRequest) {
-        UserResponseDTO userDTO = authUseCase.register(registerRequest);
         try {
+            UserResponseDTO userDTO = authUseCase.register(registerRequest);
             return apiResponse.genericResponse(HttpStatus.CREATED, userDTO, "Usuario creado correctamente.", httpServletRequest.getRequestURI());
-        } catch (Exception exception){
-            IO.println(exception);
-            return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+        } catch (UserRegisteredException _){
+            return apiResponse.error(HttpStatus.CONFLICT,httpServletRequest.getRequestURI());
         }
     }
 
