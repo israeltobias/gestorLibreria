@@ -4,8 +4,6 @@ import es.biblioteca.userservice.application.exceptions.UserRegisteredException;
 import es.biblioteca.userservice.application.port.in.AuthUseCase;
 import es.biblioteca.userservice.domain.model.Role;
 import es.biblioteca.userservice.infrastructure.adapter.out.factory.ResponseEntityFactory;
-import es.biblioteca.userservice.infrastructure.config.ConfigErrorCodesProperties;
-import es.biblioteca.userservice.infrastructure.config.ConfigErrorMessagesProperties;
 import es.biblioteca.userservice.infrastructure.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -33,10 +31,6 @@ class AuthControllerTest {
     HttpServletRequest httpServletRequest;
     @InjectMocks
     AuthController authController;
-    @Mock
-    ConfigErrorCodesProperties configErrorCodesProperties;
-    @Mock
-    ConfigErrorMessagesProperties configErrorMessagesProperties;
     @Mock
     private AuthUseCase authUseCase;
     @Mock
@@ -101,34 +95,46 @@ class AuthControllerTest {
         List<Role> roleList = List.of(Role.USER);
         String msgError = "Los datos ya existen.";
         String msgCode = "DATA_FOUND";
+        Instant now = Instant.now();
 
         RegisterRequest registerRequest = new RegisterRequest(username, password, roleList);
+        ErrorResponse errorResponse = new ErrorResponse(msgCode, msgError, now, path);
+        ResponseEntity<Object> expectedResponse = ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 
 
         when(httpServletRequest.getRequestURI()).thenReturn(path);
         when(authUseCase.register(registerRequest)).thenThrow(new UserRegisteredException(msgError));
-        ResponseEntityFactory apiResponseError = new ResponseEntityFactory(configErrorCodesProperties, configErrorMessagesProperties);
-        authController = new AuthController(authUseCase, apiResponseError);
-        when(configErrorCodesProperties.getCode(HttpStatus.CONFLICT)).thenReturn(msgCode);
-        when(configErrorMessagesProperties.getMessage(HttpStatus.CONFLICT)).thenReturn(msgError);
-
+        when(apiResponse.error(HttpStatus.CONFLICT, path)).thenReturn(expectedResponse);
 
         ResponseEntity<Object> actualResponse = authController.registerUser(registerRequest, httpServletRequest);
 
-        assertNotNull(actualResponse);
-        assertEquals(HttpStatus.CONFLICT, actualResponse.getStatusCode());
+        assertThat(actualResponse)
+                .isNotNull()
+                .isInstanceOf(ResponseEntity.class)
+                .isEqualTo(expectedResponse)
+                .hasFieldOrProperty("status")
+                .hasFieldOrProperty("body");
+        assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
         assertInstanceOf(ErrorResponse.class, actualResponse.getBody());
 
 
         ErrorResponse responseBody = (ErrorResponse) actualResponse.getBody();
-        assertThat(responseBody).isNotNull();
+        assertThat(responseBody)
+                .isNotNull()
+                .isEqualTo(errorResponse)
+                .hasFieldOrProperty("path")
+                .hasFieldOrProperty("code")
+                .hasFieldOrProperty("message")
+                .hasFieldOrProperty("timestamp");
         assertEquals(path, responseBody.path());
         assertEquals(msgCode, responseBody.code());
         assertEquals(msgError, responseBody.message());
+        assertEquals(now, responseBody.timestamp());
 
         verify(authUseCase, times(1)).register(any());
-        verify(configErrorCodesProperties, times(1)).getCode(HttpStatus.CONFLICT);
-        verify(configErrorMessagesProperties, times(1)).getMessage(HttpStatus.CONFLICT);
+        verify(apiResponse, times(1)).error(HttpStatus.CONFLICT, path);
+
+        verify(apiResponse, never()).genericResponse(any(), any(), anyString(), anyString());
     }
 
     // =========================================================================
@@ -193,38 +199,46 @@ class AuthControllerTest {
         String password = "password";
         String msgError = "No se han encontrado datos";
         String msgCode = "DATA_NOT_FOUND";
+        Instant now = Instant.now();
         LoginRequest loginRequest = new LoginRequest(username, password);
+        ErrorResponse errorResponse = new ErrorResponse(msgCode, msgError, now, path);
+        ResponseEntity<Object> expectedResponse = ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
 
         when(httpServletRequest.getRequestURI()).thenReturn(path);
         when(authUseCase.login(loginRequest)).thenReturn(Optional.empty());
-        ResponseEntityFactory apiResponseError = new ResponseEntityFactory(configErrorCodesProperties, configErrorMessagesProperties);
-        authController = new AuthController(authUseCase, apiResponseError);
-        when(configErrorCodesProperties.getCode(HttpStatus.NOT_FOUND)).thenReturn(msgCode);
-        when(configErrorMessagesProperties.getMessage(HttpStatus.NOT_FOUND)).thenReturn(msgError);
+        when(apiResponse.error(HttpStatus.NOT_FOUND, path)).thenReturn(expectedResponse);
 
         ResponseEntity<Object> actualResponse = authController.loginUser(loginRequest, httpServletRequest);
 
-        assertNotNull(actualResponse);
-        assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
-        assertThat(actualResponse.getBody())
+        assertThat(actualResponse)
                 .isNotNull()
-                .isInstanceOf(ErrorResponse.class)
+                .isInstanceOf(ResponseEntity.class)
+                .isEqualTo(expectedResponse)
+                .hasFieldOrProperty("status")
+                .hasFieldOrProperty("body");
+        assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
+        assertInstanceOf(ErrorResponse.class, actualResponse.getBody());
+
+        ErrorResponse responseBody = (ErrorResponse) actualResponse.getBody();
+
+        assertThat(responseBody)
+                .isNotNull()
+                .isEqualTo(errorResponse)
+                .hasFieldOrProperty("path")
                 .hasFieldOrProperty("code")
                 .hasFieldOrProperty("message")
-                .hasFieldOrProperty("timestamp")
-                .hasFieldOrProperty("path");
-
-        ErrorResponse bodyResponse = (ErrorResponse) actualResponse.getBody();
-
-        assertEquals(msgCode, bodyResponse.code());
-        assertEquals(msgError, bodyResponse.message());
-        assertEquals(path, bodyResponse.path());
+                .hasFieldOrProperty("timestamp");
+        assertEquals(path, responseBody.path());
+        assertEquals(msgCode, responseBody.code());
+        assertEquals(msgError, responseBody.message());
+        assertEquals(now, responseBody.timestamp());
 
         verify(httpServletRequest, times(1)).getRequestURI();
         verify(authUseCase, times(1)).login(any());
-        verify(configErrorCodesProperties, times(1)).getCode(HttpStatus.NOT_FOUND);
-        verify(configErrorMessagesProperties, times(1)).getMessage(HttpStatus.NOT_FOUND);
-        
+        verify(apiResponse, times(1)).error(HttpStatus.NOT_FOUND, path);
+
+        verify(apiResponse, never()).ok(any(TokenResponse.class), anyString(), anyString());
+
     }
 }
