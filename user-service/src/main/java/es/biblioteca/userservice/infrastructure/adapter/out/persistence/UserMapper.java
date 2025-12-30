@@ -31,7 +31,7 @@ public class UserMapper {
     public static UserResponseDTO toDTO(UserEntity user) {
         return new UserResponseDTO(
                 user.getUsername(),
-                user.getRoles() // Asumiendo que getRoles() devuelve List<String>
+                user.getRoles()
         );
     }
 
@@ -41,11 +41,8 @@ public class UserMapper {
                 .toList();
     }
 
-    public static SecurityUser toSecurityUser(User user){
+    public static SecurityUser toSecurityUser(User user) {
         return new SecurityUser(user);
     }
 
-    public static SecurityUser toSecuritUser(UserEntity userEntity){
-        return new SecurityUser(toDomain(userEntity));
-    }
 }
