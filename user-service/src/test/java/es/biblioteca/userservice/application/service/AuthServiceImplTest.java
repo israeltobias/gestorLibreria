@@ -5,7 +5,9 @@ import es.biblioteca.userservice.domain.model.Role;
 import es.biblioteca.userservice.domain.model.User;
 import es.biblioteca.userservice.domain.repository.UserRepositoryPort;
 import es.biblioteca.userservice.infrastructure.adapter.out.security.JwtProvider;
+import es.biblioteca.userservice.infrastructure.dto.LoginRequest;
 import es.biblioteca.userservice.infrastructure.dto.RegisterRequest;
+import es.biblioteca.userservice.infrastructure.dto.TokenResponse;
 import es.biblioteca.userservice.infrastructure.dto.UserResponseDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
@@ -104,4 +107,89 @@ class AuthServiceImplTest {
         verify(userRepositoryPort, never()).save(any(User.class));
     }
 
+    // =========================================================================
+    // TESTS PARA login(..)
+    // =========================================================================
+
+    @Test
+    @DisplayName("Deberia devolver un token si existe el usuario")
+    void login_shouldReturnToken_whenUserExists() {
+        String username = "username";
+        String password = "password";
+        String encodedPassword = "encodedPassword";
+        TokenResponse token = new TokenResponse("token");
+        List<Role> roles = List.of(Role.USER, Role.ADMIN);
+        HashSet<Role> hashSetRoles = new HashSet<>(roles);
+        User user = new User(1L, username, encodedPassword, hashSetRoles);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+
+        when(userRepositoryPort.findByUsername(username)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        when(jwtProvider.createToken(any(UserDetails.class))).thenReturn(token);
+
+        Optional<TokenResponse> actualResponse = authService.login(loginRequest);
+
+        assertThat(actualResponse)
+                .isNotNull()
+                .isPresent()
+                .hasValueSatisfying(tokenResponse -> {
+                    assertThat(tokenResponse)
+                            .hasFieldOrProperty("token");
+                    assertEquals(token.token(), tokenResponse.token());
+                });
+
+        verify(userRepositoryPort, times(1)).findByUsername(username);
+        verify(passwordEncoder, times(1)).matches(anyString(), anyString());
+        verify(jwtProvider, times(1)).createToken(any(UserDetails.class));
+    }
+
+    @Test
+    @DisplayName("Debería devolver un token vacío si no existe el usuario")
+    void login_shouldEmptyReturnToken_whenUserNoExists() {
+        String username = "usuario_inexistente";
+        LoginRequest loginRequest = new LoginRequest(username, "password");
+
+        when(userRepositoryPort.findByUsername(username)).thenReturn(Optional.empty());
+
+
+        Optional<TokenResponse> actualResponse = authService.login(loginRequest);
+
+        assertThat(actualResponse)
+                .isNotNull()
+                .isEmpty();
+
+        verify(userRepositoryPort, times(1)).findByUsername(username);
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(jwtProvider, never()).createToken(any(UserDetails.class));
+    }
+
+    @Test
+    @DisplayName("Debería devolver un Optional vacío si la contraseña es incorrecta")
+    void login_shouldReturnEmptyOptional_whenPasswordIsIncorrect() {
+        // --- Arrange ---
+        String username = "usuario_existente";
+        String wrongPassword = "password_incorrecta";
+        String passwordHasheada = "password_correcta_hasheada";
+        LoginRequest loginRequest = new LoginRequest(username, wrongPassword);
+
+        User existingUser = User.builder()
+                .username(username)
+                .password(passwordHasheada)
+                .roles(new HashSet<>(List.of(Role.USER)))
+                .build();
+        
+        when(userRepositoryPort.findByUsername(username)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches(wrongPassword, passwordHasheada)).thenReturn(false);
+
+
+        Optional<TokenResponse> actualResponse = authService.login(loginRequest);
+
+        assertThat(actualResponse)
+                .isNotNull()
+                .isEmpty();
+
+        verify(userRepositoryPort, times(1)).findByUsername(username);
+        verify(passwordEncoder, times(1)).matches(wrongPassword, passwordHasheada);
+        verify(jwtProvider, never()).createToken(any(UserDetails.class));
+    }
 }
