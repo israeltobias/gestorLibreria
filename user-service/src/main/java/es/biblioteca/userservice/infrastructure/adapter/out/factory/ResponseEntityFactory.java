@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @AllArgsConstructor
@@ -38,11 +37,6 @@ public class ResponseEntityFactory {
         return ResponseEntity.status(status).body(body);
     }
 
-    public ResponseEntity<Object> ok(String fieldName, Object value, String path) {
-        // Si el valor es un TokenResponse, el AOP lo enmascarará
-        Map<String, Object> data = Map.of(fieldName, value);
-        return ok(data, "Operación realizada con éxito", path);
-    }
 
     public <T> ResponseEntity<Object> ok(Page<T> page, String path) {
         PaginationInfo pagination = new PaginationInfo(
