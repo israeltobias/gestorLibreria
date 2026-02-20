@@ -73,7 +73,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    private String getPathFromWebRequest(WebRequest webRequest) {
+    protected String getPathFromWebRequest(WebRequest webRequest) {
         try {
             // Intenta obtener la ruta del forward primero
             String path = Objects.requireNonNull(webRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI, RequestAttributes.SCOPE_REQUEST)).toString();
@@ -83,7 +83,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         // Si no, obtén la URI del request nativo
-       if (webRequest instanceof ServletWebRequest servletWebRequest) {
+        if (webRequest instanceof ServletWebRequest servletWebRequest) {
             return servletWebRequest.getRequest().getRequestURI();
         }
 
