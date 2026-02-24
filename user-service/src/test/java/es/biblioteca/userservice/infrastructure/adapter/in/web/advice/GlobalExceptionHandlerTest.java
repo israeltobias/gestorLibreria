@@ -45,17 +45,14 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Debería delegar la creación de la respuesta de error a la fábrica con los parámetros correctos")
     void handleUserFound_shouldDelegateToResponseEntityFactory_withCorrectParameters() {
-        // --- Arrange (Preparar) ---
         String expectedPath = "/auth/register";
         UserRegisteredException exception = new UserRegisteredException("El usuario ya existe.");
-
 
         when(mockRequest.getRequestURI()).thenReturn(expectedPath);
         ResponseEntity<Object> mockResponseEntity = ResponseEntity.status(HttpStatus.CONFLICT).build();
         when(apiResponse.error(HttpStatus.CONFLICT, expectedPath)).thenReturn(mockResponseEntity);
 
         ResponseEntity<Object> actualResponse = globalExceptionHandler.handleUserFound(exception, mockRequest);
-
 
         assertThat(actualResponse).isNotNull();
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
@@ -64,7 +61,7 @@ class GlobalExceptionHandlerTest {
         verify(mockRequest, times(1)).getRequestURI();
     }
 
-// =========================================================================
+    // =========================================================================
     // TESTS PARA handleHttpMessageNotReadable(...)
     // =========================================================================
 
@@ -95,27 +92,21 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("handleHttpMessageNotReadable debería devolver un mensaje específico para errores de Enum inválidos")
     void handleHttpMessageNotReadable_shouldReturnSpecificMessage_forInvalidEnumError() {
-        // --- Arrange ---
+
         String expectedPath = "/auth/register";
 
-        // 1. Simulamos la excepción InvalidFormatException que Jackson lanzaría
         String jacksonErrorMessage = "Cannot deserialize value of type `...Role` from String \"GUEST\": not one of the values accepted for Enum class: [ADMIN, USER]";
         InvalidFormatException cause = mock(InvalidFormatException.class);
         when(cause.getMessage()).thenReturn(jacksonErrorMessage);
 
-        // 2. Envolvemos la causa en la excepción principal
         HttpMessageNotReadableException exception = new HttpMessageNotReadableException("JSON parse error", cause, mock(HttpInputMessage.class));
 
-        // Configuramos los mocks
         when(mockWebRequest.getAttribute(anyString(), anyInt())).thenReturn(expectedPath);
-        // when(mockRequest.getRequestURI()).thenReturn(expectedPath);
 
-        // --- Act ---
         ResponseEntity<Object> response = globalExceptionHandler.handleHttpMessageNotReadable(
                 exception, new HttpHeaders(), HttpStatus.BAD_REQUEST, mockWebRequest
         );
 
-        // --- Assert ---
         Assertions.assertNotNull(response);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isInstanceOf(ErrorResponse.class);
@@ -123,12 +114,55 @@ class GlobalExceptionHandlerTest {
         ErrorResponse body = (ErrorResponse) response.getBody();
         Assertions.assertNotNull(body);
         assertThat(body.code()).isEqualTo("INVALID_JSON_FORMAT");
-        // ¡LA ASERCIÓN CLAVE!
         assertThat(body.message()).isEqualTo("Valor de rol inválido. Los valores permitidos son: ADMIN,  USER.");
         assertThat(body.path()).isEqualTo(expectedPath);
     }
 
+    @Test
+    @DisplayName("handleHttpMessageNotReadable debería devolver un mensaje de fallback para errores de formato inválido no esperados")
+    void handleHttpMessageNotReadable_shouldReturnFallbackMessage_forUnexpectedInvalidFormatError() {
 
+        String expectedPath = "/some/path";
+        String jacksonErrorMessage = "Formato de fecha inválido, se esperaba yyyy-MM-dd";
+        InvalidFormatException cause = mock(InvalidFormatException.class);
+
+        HttpMessageNotReadableException exception = new HttpMessageNotReadableException("JSON parse error", cause, mock(HttpInputMessage.class));
+
+        when(cause.getMessage()).thenReturn(jacksonErrorMessage);
+        when(mockWebRequest.getAttribute(anyString(), anyInt())).thenReturn(expectedPath);
+
+        ResponseEntity<Object> response = globalExceptionHandler.handleHttpMessageNotReadable(
+                exception, new HttpHeaders(), HttpStatus.BAD_REQUEST, mockWebRequest
+        );
+
+        Assertions.assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        ErrorResponse body = (ErrorResponse) response.getBody();
+        assertThat(body).isNotNull();
+
+        assertThat(body.message()).isEqualTo("Se ha proporcionado un valor inválido para un campo de tipo enumerado (enum).");
+        assertThat(body.path()).isEqualTo(expectedPath);
+
+        verify(mockWebRequest, times(1)).getAttribute(anyString(), anyInt());
+    }
+
+    @Test
+    @DisplayName("getPathFromWebRequest debería devolver 'unknown' si el WebRequest no es de tipo Servlet")
+    void getPathFromWebRequest_shouldReturnUnknown_whenRequestIsNotServletWebRequest() {
+
+        when(mockWebRequest.getAttribute(anyString(), anyInt()))
+                .thenReturn(null);
+
+        String actualPath = globalExceptionHandler.getPathFromWebRequest(mockWebRequest);
+
+        assertThat(actualPath).isNull();
+
+        verify(mockWebRequest, times(1)).getAttribute(anyString(), anyInt());
+    }
+
+    // =========================================================================
+    // TESTS PARA getPathFromWebRequest(...)
+    // =========================================================================
     @Test
     @DisplayName("getPathFromWebRequest debería devolver la URI del forward si existe")
     void getPathFromWebRequest_shouldReturnForwardUri_whenAttributeExists() {
@@ -138,7 +172,6 @@ class GlobalExceptionHandlerTest {
                 .thenReturn(expectedPath);
 
         String actualPath = globalExceptionHandler.getPathFromWebRequest(mockWebRequest);
-
 
         assertThat(actualPath).isEqualTo(expectedPath);
 
@@ -153,25 +186,22 @@ class GlobalExceptionHandlerTest {
 
         when(mockWebRequest.getAttribute(any(), anyInt())).thenReturn(expectedPath);
 
-
         String actualPath = globalExceptionHandler.getPathFromWebRequest(mockWebRequest);
 
 
         assertThat(actualPath).isEqualTo(expectedPath);
-        
+
         verify(mockWebRequest, times(1)).getAttribute(anyString(), anyInt());
     }
 
     @Test
-    @DisplayName("getPathFromWebRequest debería devolver 'unknown' si no puede obtener la ruta")
+    @DisplayName("getPathFromWebRequest Debera devolver 'unknown' si no puede obtener la ruta")
     void getPathFromWebRequest_shouldReturnUnknown_whenPathCannotBeDetermined() {
 
         when(mockWebRequest.getAttribute(anyString(), anyInt())).thenReturn(null);
 
         String actualPath = globalExceptionHandler.getPathFromWebRequest(mockWebRequest);
-
-
-        assertThat(actualPath).isEqualTo("unknown");
+        assertThat(actualPath).isNull();
 
         verify(mockWebRequest, times(1)).getAttribute(anyString(), anyInt());
     }

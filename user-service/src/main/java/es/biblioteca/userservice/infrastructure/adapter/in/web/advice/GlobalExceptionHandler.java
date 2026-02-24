@@ -19,7 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.Instant;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,12 +62,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 detailedMessage = "Se ha proporcionado un valor inválido para un campo de tipo enumerado (enum).";
             }
         }
-
+        String path = getPathFromWebRequest(request);
+        if (path == null) {
+            path = "unknown";
+        }
         ErrorResponse errorResponse = new ErrorResponse(
                 "INVALID_JSON_FORMAT", // O un código de error que definas
                 detailedMessage,
                 Instant.now(),
-                getPathFromWebRequest(request)
+                path
         );
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -75,18 +78,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     protected String getPathFromWebRequest(WebRequest webRequest) {
         try {
-            // Intenta obtener la ruta del forward primero
-            String path = Objects.requireNonNull(webRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI, RequestAttributes.SCOPE_REQUEST)).toString();
-            if (path != null) return path;
+            Object forwardUri = webRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI, RequestAttributes.SCOPE_REQUEST);
+            
+            return Optional.ofNullable(forwardUri)
+                    .map(Object::toString)
+                    .orElseGet(() -> { // Si no hay forward, ejecutamos el código de respaldo
+                        if (webRequest instanceof ServletWebRequest servletWebRequest) {
+                            return servletWebRequest.getRequest().getRequestURI();
+                        }
+                        return null; // Devuelve null si tampoco es un ServletWebRequest
+                    });
+
         } catch (Exception _) {
-            // Ignora y prueba la siguiente opción
+            // En caso de cualquier error inesperado, devolvemos null
+            return null;
         }
-
-        // Si no, obtén la URI del request nativo
-        if (webRequest instanceof ServletWebRequest servletWebRequest) {
-            return servletWebRequest.getRequest().getRequestURI();
-        }
-
-        return "unknown";
     }
 }
