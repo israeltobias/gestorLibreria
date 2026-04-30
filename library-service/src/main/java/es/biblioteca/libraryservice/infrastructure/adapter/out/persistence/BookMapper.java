@@ -4,6 +4,8 @@ import es.biblioteca.libraryservice.domain.model.Book;
 import es.biblioteca.libraryservice.infrastructure.dto.BookRefDto;
 import es.biblioteca.libraryservice.infrastructure.dto.BookResponseDto;
 
+import java.util.List;
+
 public class BookMapper {
 
     private BookMapper() {
@@ -22,6 +24,10 @@ public class BookMapper {
                 .numPages(bookEntity.getNumPages())
                 .author(bookEntity.getAuthor())
                 .build();
+    }
+
+    public static List<Book> toDomain(List<BookEntity> bookEntityList) {
+        return bookEntityList.stream().map(BookMapper::toDomain).toList();
     }
 
     /// DTOs

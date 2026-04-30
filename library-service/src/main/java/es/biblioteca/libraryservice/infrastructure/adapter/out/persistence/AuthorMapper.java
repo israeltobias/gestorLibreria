@@ -20,6 +20,9 @@ public class AuthorMapper {
         return new AuthorEntity(author.getName(), author.getSurname());
     }
 
+    public static List<Author> toDomain(List<AuthorEntity> authorEntities) {
+        return authorEntities.stream().map(AuthorMapper::toDomain).toList();
+    }
 
     /// DTOs
 
